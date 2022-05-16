@@ -1,10 +1,10 @@
 const { rmSync } = require("fs");
-const {User} = require("../models");
+const {User, Thought} = require("../models");
 const { findOneAndUpdate } = require("../models/user");
 
 const getUsers = async (req,res)=>{
     try{
-        const users = await User.find().populate("friends") ;
+        const users = await User.find().populate("friends").populate("thoughts") ;
         res.status(200).json(users)
     }catch(err){
         res.status(500).json(err)
@@ -50,12 +50,17 @@ const updateUser = async (req,res)=>{
 
 const deleteUser = async (req,res)=>{
     try{
-        const user = await User.findOneAndRemove({_id:req.params.id}).populate("friends")
+        const user = await User.findById(req.params.id)
+        await User.findOneAndRemove({_id:req.params.id})
+        const username = user.userName;
+        console.log(username)
         if (!user){
             res.status(404).json({message:"no user with this id"})
         }
         else{
-            res.status(200).json(user)
+            console.log("in it")
+            const deletedThoughts = await Thought.deleteMany({username})
+        res.status(200).json(user)
         }
     }catch(err){
         res.status(500).json(err)

@@ -1,4 +1,4 @@
-const {Thought} = require("../models")
+const {Thought, User} = require("../models")
 
 const getThoughts = async (req,res)=>{
     try{
@@ -26,6 +26,11 @@ const getSingleThought = async(req,res)=>{
 const addThought = async(req,res)=>{
     try{
         const thought = await Thought.create(req.body);
+        const user = await User.findOneAndUpdate(
+            {userName:req.body.username},
+            {$addToSet:{thoughts:thought._id}},
+            {runValidators:true,new:true}
+        )
         res.status(200).json(thought)
     }catch(err){
         res.status(500).json(err)
